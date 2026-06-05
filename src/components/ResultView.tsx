@@ -34,10 +34,6 @@ function ResultView({ entry, saved, onSave, onAgain, onHistory, onHome }: Result
             </strong>
           </div>
           <div>
-            <p className="detail-label">今日关键词</p>
-            <strong>{entry.keywords || '未填写关键词'}</strong>
-          </div>
-          <div>
             <p className="detail-label">一句话日记</p>
             <span>{entry.note || '今天没有写下句子，但情绪已经被保存成一段声音。'}</span>
           </div>
@@ -76,7 +72,7 @@ function ResultView({ entry, saved, onSave, onAgain, onHistory, onHome }: Result
             </button>
             <button className="ghost-button" type="button" onClick={onHistory}>
               <Archive size={18} />
-              查看历史
+              情绪档案
             </button>
             <button className="ghost-button" type="button" onClick={onHome}>
               <Home size={18} />

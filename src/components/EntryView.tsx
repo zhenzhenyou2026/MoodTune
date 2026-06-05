@@ -1,11 +1,8 @@
 import {
-  Cloud,
-  CloudRain,
   Home,
   Moon,
   Smile,
   Sparkles,
-  Sun,
   Waves,
   Zap,
 } from 'lucide-react'
@@ -16,27 +13,38 @@ import { generateRecommendation } from '../utils/recommendation'
 import MoodCard from './MoodCard'
 import PillButton from './PillButton'
 import RangeControl from './RangeControl'
+import WeatherIcon from './WeatherIcon'
 
 interface EntryViewProps {
   onGenerated: (entry: MoodEntry) => void
   onHome: () => void
+  onMoodChange: (mood: Mood) => void
 }
 
 const moodIcons = {
   开心: <Smile size={18} />,
   平静: <Waves size={18} />,
-  焦虑: <Cloud size={18} />,
+  焦虑: <Waves size={18} />,
   疲惫: <Moon size={18} />,
-  低落: <CloudRain size={18} />,
+  低落: <Moon size={18} />,
   兴奋: <Zap size={18} />,
 } satisfies Record<Mood, JSX.Element>
 
-const weatherIcons = {
-  晴天: <Sun size={18} />,
-  阴天: <Cloud size={18} />,
-  雨天: <CloudRain size={18} />,
-  夜晚: <Moon size={18} />,
-} satisfies Record<Weather, JSX.Element>
+const moodTones = {
+  开心: 'happy',
+  平静: 'calm',
+  焦虑: 'anxious',
+  疲惫: 'tired',
+  低落: 'sad',
+  兴奋: 'excited',
+} satisfies Record<Mood, string>
+
+const weatherTones = {
+  晴天: 'sunny',
+  阴天: 'cloudy',
+  雨天: 'rainy',
+  夜晚: 'night',
+} satisfies Record<Weather, string>
 
 function createId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -46,12 +54,11 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-function EntryView({ onGenerated, onHome }: EntryViewProps) {
+function EntryView({ onGenerated, onHome, onMoodChange }: EntryViewProps) {
   const [mood, setMood] = useState<Mood | ''>('')
   const [energy, setEnergy] = useState(5)
   const [stress, setStress] = useState(5)
   const [weather, setWeather] = useState<Weather | ''>('')
-  const [keywords, setKeywords] = useState('')
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
 
@@ -61,7 +68,6 @@ function EntryView({ onGenerated, onHome }: EntryViewProps) {
       energy,
       stress,
       weather: weather || '夜晚',
-      keywords,
       note,
     }
 
@@ -71,7 +77,7 @@ function EntryView({ onGenerated, onHome }: EntryViewProps) {
       createdAt: new Date().toISOString(),
       recommendation: generateRecommendation(safeInput),
     }
-  }, [energy, keywords, mood, note, stress, weather])
+  }, [energy, mood, note, stress, weather])
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -86,7 +92,6 @@ function EntryView({ onGenerated, onHome }: EntryViewProps) {
       energy,
       stress,
       weather,
-      keywords: keywords.trim(),
       note: note.trim(),
     }
 
@@ -123,8 +128,10 @@ function EntryView({ onGenerated, onHome }: EntryViewProps) {
                   active={mood === item}
                   icon={moodIcons[item]}
                   label={item}
+                  tone={moodTones[item]}
                   onClick={() => {
                     setMood(item)
+                    onMoodChange(item)
                     setError('')
                   }}
                 />
@@ -156,8 +163,9 @@ function EntryView({ onGenerated, onHome }: EntryViewProps) {
                 <PillButton
                   key={item}
                   active={weather === item}
-                  icon={weatherIcons[item]}
+                  icon={<WeatherIcon weather={item} />}
                   label={item}
+                  tone={weatherTones[item]}
                   onClick={() => {
                     setWeather(item)
                     setError('')
@@ -166,17 +174,6 @@ function EntryView({ onGenerated, onHome }: EntryViewProps) {
               ))}
             </div>
           </div>
-
-          <label className="text-field">
-            <span className="field-heading">今日关键词</span>
-            <input
-              type="text"
-              value={keywords}
-              maxLength={24}
-              placeholder="考试、散步、失眠、朋友..."
-              onChange={(event) => setKeywords(event.target.value)}
-            />
-          </label>
 
           <label className="text-field">
             <span className="field-heading">一句话日记</span>

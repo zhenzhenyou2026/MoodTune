@@ -1,11 +1,13 @@
-import { Archive, ArrowRight, Music2 } from 'lucide-react'
+import { Archive, ArrowRight } from 'lucide-react'
+import DecorativeMusicGlyph from './DecorativeMusicGlyph'
 
 interface LandingViewProps {
+  isMusicActive: boolean
   onStart: () => void
   onHistory: () => void
 }
 
-function LandingView({ onStart, onHistory }: LandingViewProps) {
+function LandingView({ isMusicActive, onStart, onHistory }: LandingViewProps) {
   return (
     <section className="view landing-view page-fade">
       <div className="landing-grid">
@@ -14,7 +16,7 @@ function LandingView({ onStart, onHistory }: LandingViewProps) {
           <h1>MoodTune</h1>
           <h2>今天的情绪，适合什么声音？</h2>
           <p className="hero-copy">
-            用一分钟记录此刻的心情，让颜色、文字和音乐氛围为你保存今天。
+            用 60 秒记录此刻心情，让色彩、文字与音乐一起保存今天。
           </p>
 
           <div className="hero-actions">
@@ -22,26 +24,23 @@ function LandingView({ onStart, onHistory }: LandingViewProps) {
               <ArrowRight size={18} />
               开始记录
             </button>
-            <button className="ghost-button" type="button" onClick={onHistory}>
+            <button className="archive-button" type="button" onClick={onHistory}>
               <Archive size={18} />
-              查看历史
+              情绪档案
             </button>
           </div>
         </div>
 
         <div className="record-stage" aria-hidden="true">
-          <div className="record">
+          <div className={`record ${isMusicActive ? 'is-playing' : 'is-paused'}`}>
             <div className="record__ring" />
             <div className="record__core">
-              <Music2 size={30} />
+              <DecorativeMusicGlyph />
             </div>
           </div>
           <div className="wave wave-a" />
           <div className="wave wave-b" />
-          <div className="album-caption">
-            <span>private mood archive</span>
-            <strong>vol. 01</strong>
-          </div>
+          <p className="album-caption">今日心绪存档</p>
         </div>
       </div>
     </section>

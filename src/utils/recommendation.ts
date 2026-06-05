@@ -11,7 +11,7 @@ const recommendations = {
   },
   bright: {
     moodColor: '#ffb45f',
-    gradient: 'linear-gradient(135deg, #ffd166 0%, #ff9f7a 52%, #f8c9b5 100%)',
+    gradient: 'linear-gradient(135deg, #fff0b8 0%, #ffb996 52%, #f4a7b9 100%)',
     musicMood: '明亮律动',
     genres: ['Indie Pop', 'Funk', 'City Pop'],
     reason: '你的状态轻快而有弹性，适合一点带有阳光感和律动感的音乐。',
@@ -27,7 +27,7 @@ const recommendations = {
   },
   calm: {
     moodColor: '#c9d8a6',
-    gradient: 'linear-gradient(135deg, #f6edda 0%, #dfe8cc 50%, #f7e7b4 100%)',
+    gradient: 'linear-gradient(135deg, #fff7ea 0%, #dfe8cc 50%, #a8d8c1 100%)',
     musicMood: '柔和留白',
     genres: ['Jazz', 'Acoustic', 'Neo-Classical'],
     reason: '今天的情绪像一块安静的水面，适合留白感更强的声音。',
@@ -43,7 +43,7 @@ const recommendations = {
   },
   dance: {
     moodColor: '#c15ff2',
-    gradient: 'linear-gradient(135deg, #261657 0%, #8a5cf6 45%, #ff5d8f 100%)',
+    gradient: 'linear-gradient(135deg, #4d3a8b 0%, #b8a7ff 45%, #ff8aa6 100%)',
     musicMood: '闪光舞池',
     genres: ['Electronic', 'Synth Pop', 'Disco'],
     reason: '今天的能量适合被放大，用更明亮的节拍保存这份兴奋感。',
@@ -94,6 +94,22 @@ export function generateRecommendation(input: MoodInput): MoodRecommendation {
 
   if (input.mood === '平静') {
     return recommendations.calm
+  }
+
+  if (input.mood === '开心') {
+    return recommendations.bright
+  }
+
+  if (input.mood === '焦虑') {
+    return recommendations.quiet
+  }
+
+  if (input.mood === '低落') {
+    return recommendations.rainy
+  }
+
+  if (input.mood === '兴奋') {
+    return recommendations.dance
   }
 
   return recommendations.daily

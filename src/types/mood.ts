@@ -9,7 +9,6 @@ export interface MoodInput {
   energy: number
   stress: number
   weather: Weather
-  keywords: string
   note: string
 }
 
