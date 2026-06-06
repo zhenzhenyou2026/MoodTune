@@ -24,7 +24,9 @@ export interface MoodRecommendation {
 export interface MoodEntry extends MoodInput {
   id: string
   createdAt: string
+  musicArtist: string
   musicKey: string
+  musicTitle: string
   quote: string
   recommendation: MoodRecommendation
 }

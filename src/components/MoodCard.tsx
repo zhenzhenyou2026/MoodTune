@@ -1,6 +1,7 @@
 import { Music2, Sparkles } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { getMoodTheme } from '../data/moodThemes'
+import { getMusicTrackForEntry } from '../data/musicTracks'
 import type { MoodEntry } from '../types/mood'
 import PreviewDecoration from './PreviewDecoration'
 
@@ -19,6 +20,7 @@ function formatDate(value: string) {
 
 function MoodCard({ entry, compact = false }: MoodCardProps) {
   const theme = getMoodTheme(entry.mood)
+  const track = getMusicTrackForEntry(entry.mood, entry.musicKey)
   const style = {
     '--card-gradient': entry.recommendation.gradient,
     '--card-ink': theme.textColor,
@@ -50,6 +52,11 @@ function MoodCard({ entry, compact = false }: MoodCardProps) {
       <div className="music-label">
         <Sparkles size={18} />
         <span>{entry.recommendation.musicMood}</span>
+      </div>
+
+      <div className="track-label">
+        <span>今日声音：{entry.musicTitle || track.title}</span>
+        {!compact && <small>{entry.musicArtist || track.artist}</small>}
       </div>
 
       {!compact && (

@@ -1,6 +1,7 @@
 import type { Mood } from '../types/mood'
+import type { MusicTrackKey } from './musicTracks'
 
-export type MusicKey = 'home' | 'happy' | 'calm' | 'anxious' | 'tired' | 'sad' | 'hopeful'
+export type MusicKey = MusicTrackKey
 
 export type MoodTheme = {
   archiveAccent: string

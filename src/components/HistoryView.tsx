@@ -2,6 +2,7 @@ import { Flame, Home, Music2, Plus, Trash2, Waves } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { useMemo, useState } from 'react'
 import { getMoodTheme } from '../data/moodThemes'
+import { getMusicTrackForEntry } from '../data/musicTracks'
 import type { Mood, MoodEntry } from '../types/mood'
 import { clearEntries, deleteEntry, getEntries } from '../utils/storage'
 import ArchiveCard from './ArchiveCard'
@@ -89,6 +90,9 @@ function HistoryView({ onHome, onCreate }: HistoryViewProps) {
   }
 
   const selectedTheme = selectedEntry ? getMoodTheme(selectedEntry.mood) : null
+  const selectedTrack = selectedEntry
+    ? getMusicTrackForEntry(selectedEntry.mood, selectedEntry.musicKey)
+    : null
 
   return (
     <section className="view history-view page-fade">
@@ -146,7 +150,7 @@ function HistoryView({ onHome, onCreate }: HistoryViewProps) {
               ))}
             </div>
 
-            {selectedEntry && selectedTheme && (
+            {selectedEntry && selectedTheme && selectedTrack && (
               <aside
                 className="archive-detail glass-panel"
                 style={
@@ -165,6 +169,11 @@ function HistoryView({ onHome, onCreate }: HistoryViewProps) {
                     {selectedEntry.mood} · {selectedEntry.recommendation.musicMood}
                   </div>
                   <p className="archive-detail__quote">{selectedEntry.quote}</p>
+                  <div className="archive-detail__sound">
+                    <span>这一天的声音</span>
+                    <strong>{selectedEntry.musicTitle || selectedTrack.title}</strong>
+                    <small>{selectedEntry.musicArtist || selectedTrack.artist}</small>
+                  </div>
                   <p className="archive-detail__note">
                     {selectedEntry.note || '这一天没有写下很多字，但它仍然留下了颜色和声音。'}
                   </p>

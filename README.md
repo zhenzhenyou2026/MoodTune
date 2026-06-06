@@ -18,7 +18,21 @@ MoodTune 是一个前端单页网页应用，面向大学生、年轻创作者�
 - Entry 记录页：心情卡片、能量与压力滑杆、天气按钮和一句话日记。
 - Result 结果页：生成适合截图展示的今日情绪音乐卡片。
 - History 历史页：读取 `moodtune_entries`，展示统计、卡片列表、删除单条和清空全部。
-- 轻音乐氛围：使用 Web Audio API 在本地生成低音量 ambient / lullaby 音色，支持开关和心情切换。
+- 轻音乐氛围：第四版已改为本地 MP3 播放器，支持首页默认音乐、按心情切换、1.4 秒淡入淡出、循环播放和素材缺失提示。
+- 音频授权留档：见 `public/audio/audio-credits.md`，代码不热链接外部音频。
+
+## 第四版音频文件
+
+请将 6 首官方来源曲目手动放入以下路径：
+
+- `public/audio/home-ambient-piano.mp3`
+- `public/audio/mood-happy-sweet-light.mp3`
+- `public/audio/mood-calm-soft-calm-piano.mp3`
+- `public/audio/mood-anxious-please-calm-my-mind.mp3`
+- `public/audio/mood-tired-piano-background.mp3`
+- `public/audio/mood-low-gymnopedies.mp3`
+
+当前自动下载受到官方页面访问控制限制，播放器会在素材缺失时显示“音乐素材待补充”，其他记录功能照常可用。
 
 ## 情绪推荐规则
 

@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { getMoodTheme } from '../data/moodThemes'
+import { getMusicTrackForEntry } from '../data/musicTracks'
 import type { MoodEntry } from '../types/mood'
 
 interface ArchiveCardProps {
@@ -20,6 +21,7 @@ function formatArchiveDate(value: string) {
 
 function ArchiveCard({ entry, onDelete, onSelect, selected }: ArchiveCardProps) {
   const theme = getMoodTheme(entry.mood)
+  const track = getMusicTrackForEntry(entry.mood, entry.musicKey)
   const style = {
     '--archive-accent': theme.archiveAccent,
     '--archive-paper': theme.archivePaper,
@@ -54,7 +56,7 @@ function ArchiveCard({ entry, onDelete, onSelect, selected }: ArchiveCardProps) 
       </p>
       <p className="archive-card__quote">{entry.quote}</p>
       <div className="archive-card__footer">
-        <span>{entry.recommendation.musicMood}</span>
+        <span>今日声音：{entry.musicTitle || track.title}</span>
         <button
           className="archive-delete"
           type="button"

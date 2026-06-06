@@ -1,5 +1,6 @@
 import type { MoodEntry, MoodInput } from '../types/mood'
 import { getMoodQuote, getMoodTheme } from '../data/moodThemes'
+import { getMusicTrack, getMusicTrackForMood } from '../data/musicTracks'
 import { moods, weathers } from '../types/mood'
 import { generateRecommendation } from './recommendation'
 
@@ -35,12 +36,15 @@ function normalizeEntry(value: unknown): MoodEntry | null {
     note: typeof raw.note === 'string' ? raw.note : '',
   }
   const theme = getMoodTheme(input.mood)
+  const track = getMusicTrack(typeof raw.musicKey === 'string' ? raw.musicKey : undefined) ?? getMusicTrackForMood(input.mood)
 
   return {
     ...input,
     id: raw.id,
     createdAt: raw.createdAt,
-    musicKey: typeof raw.musicKey === 'string' ? raw.musicKey : theme.musicKey,
+    musicArtist: typeof raw.musicArtist === 'string' ? raw.musicArtist : track.artist,
+    musicKey: track.key || theme.musicKey,
+    musicTitle: typeof raw.musicTitle === 'string' ? raw.musicTitle : track.title,
     quote:
       typeof raw.quote === 'string' && raw.quote.trim()
         ? raw.quote

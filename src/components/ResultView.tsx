@@ -1,4 +1,5 @@
 import { Archive, Check, Home, RotateCcw, Save } from 'lucide-react'
+import { getMusicTrackForEntry } from '../data/musicTracks'
 import type { MoodEntry } from '../types/mood'
 import MoodCard from './MoodCard'
 
@@ -12,6 +13,8 @@ interface ResultViewProps {
 }
 
 function ResultView({ entry, saved, onSave, onAgain, onHistory, onHome }: ResultViewProps) {
+  const track = getMusicTrackForEntry(entry.mood, entry.musicKey)
+
   return (
     <section className="view result-view page-fade">
       <div className="section-header centered">
@@ -51,6 +54,13 @@ function ResultView({ entry, saved, onSave, onAgain, onHistory, onHome }: Result
           <div>
             <p className="detail-label">推荐音乐氛围</p>
             <strong>{entry.recommendation.musicMood}</strong>
+          </div>
+          <div>
+            <p className="detail-label">今日声音</p>
+            <strong>{entry.musicTitle || track.title}</strong>
+            <span className="detail-subline">
+              {entry.musicArtist || track.artist} · {track.source}
+            </span>
           </div>
           <div>
             <p className="detail-label">推荐音乐风格</p>

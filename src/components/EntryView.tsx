@@ -1,9 +1,11 @@
 import { Home, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { getMoodQuote, getMoodTheme } from '../data/moodThemes'
+import { getMusicTrackForMood, homeMusicTrack } from '../data/musicTracks'
 import type { Mood, MoodEntry, MoodInput, Weather } from '../types/mood'
 import { moods, weathers } from '../types/mood'
 import { generateRecommendation } from '../utils/recommendation'
+import type { AudioState } from '../utils/audio'
 import MoodCard from './MoodCard'
 import MoodFaceIcon from './MoodFaceIcon'
 import PillButton from './PillButton'
@@ -11,6 +13,7 @@ import RangeControl from './RangeControl'
 import WeatherIcon from './WeatherIcon'
 
 interface EntryViewProps {
+  audioState: AudioState
   onGenerated: (entry: MoodEntry) => void
   onHome: () => void
   onMoodChange: (mood: Mood) => void
@@ -31,7 +34,7 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-function EntryView({ onGenerated, onHome, onMoodChange }: EntryViewProps) {
+function EntryView({ audioState, onGenerated, onHome, onMoodChange }: EntryViewProps) {
   const [mood, setMood] = useState<Mood | ''>('')
   const [energy, setEnergy] = useState(5)
   const [stress, setStress] = useState(5)
@@ -48,11 +51,15 @@ function EntryView({ onGenerated, onHome, onMoodChange }: EntryViewProps) {
       note,
     }
 
+    const previewTrack = getMusicTrackForMood(safeInput.mood)
+
     return {
       ...safeInput,
       id: 'preview',
       createdAt: new Date().toISOString(),
-      musicKey: getMoodTheme(safeInput.mood).musicKey,
+      musicArtist: previewTrack.artist,
+      musicKey: previewTrack.key,
+      musicTitle: previewTrack.title,
       quote: getMoodQuote(safeInput.mood, safeInput.note || safeInput.weather),
       recommendation: generateRecommendation(safeInput),
     }
@@ -76,16 +83,23 @@ function EntryView({ onGenerated, onHome, onMoodChange }: EntryViewProps) {
 
     const createdAt = new Date().toISOString()
     const theme = getMoodTheme(input.mood)
+    const track = getMusicTrackForMood(input.mood)
 
     onGenerated({
       ...input,
       id: createId(),
       createdAt,
-      musicKey: theme.musicKey,
+      musicArtist: track.artist,
+      musicKey: track.key || theme.musicKey,
+      musicTitle: track.title,
       quote: getMoodQuote(input.mood, createdAt),
       recommendation: generateRecommendation(input),
     })
   }
+
+  const selectedTrack = mood ? getMusicTrackForMood(mood) : homeMusicTrack
+  const isSelectedTrackMissing =
+    audioState.isMissing && audioState.currentTrack.key === selectedTrack.key
 
   return (
     <section className="view entry-view page-fade">
@@ -120,6 +134,17 @@ function EntryView({ onGenerated, onHome, onMoodChange }: EntryViewProps) {
                   }}
                 />
               ))}
+            </div>
+            <div className={`mood-sound-panel ${isSelectedTrackMissing ? 'is-missing' : ''}`}>
+              <span aria-hidden="true" />
+              <div>
+                <p>
+                  今日声音：{selectedTrack.title} · {selectedTrack.moodLabel}
+                </p>
+                <small>
+                  {isSelectedTrackMissing ? '本地音乐素材待补充' : selectedTrack.description}
+                </small>
+              </div>
             </div>
           </div>
 

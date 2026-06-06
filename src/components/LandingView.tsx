@@ -1,13 +1,14 @@
 import { Archive, ArrowRight } from 'lucide-react'
+import type { AudioState } from '../utils/audio'
 import DecorativeMusicGlyph from './DecorativeMusicGlyph'
 
 interface LandingViewProps {
-  isMusicActive: boolean
+  audioState: AudioState
   onStart: () => void
   onHistory: () => void
 }
 
-function LandingView({ isMusicActive, onStart, onHistory }: LandingViewProps) {
+function LandingView({ audioState, onStart, onHistory }: LandingViewProps) {
   return (
     <section className="view landing-view page-fade">
       <div className="landing-grid">
@@ -29,10 +30,23 @@ function LandingView({ isMusicActive, onStart, onHistory }: LandingViewProps) {
               情绪档案
             </button>
           </div>
+
+          <div className="hero-now-playing">
+            <span aria-hidden="true" />
+            <p>
+              {audioState.isMissing
+                ? `待补充：${audioState.currentTrack.title}`
+                : `首页声音：${audioState.currentTrack.title}`}
+            </p>
+          </div>
         </div>
 
         <div className="record-stage" aria-hidden="true">
-          <div className={`record ${isMusicActive ? 'is-playing' : 'is-paused'}`}>
+          <div
+            className={`record ${audioState.isPlaying ? 'is-playing' : 'is-paused'} ${
+              audioState.isMissing ? 'is-missing' : ''
+            }`}
+          >
             <div className="record__ring" />
             <div className="record__core">
               <DecorativeMusicGlyph />

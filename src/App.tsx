@@ -2,10 +2,17 @@ import { useEffect, useState } from 'react'
 import EntryView from './components/EntryView'
 import HistoryView from './components/HistoryView'
 import LandingView from './components/LandingView'
-import MusicToggle from './components/MusicToggle'
+import MusicPlayerBadge from './components/MusicPlayerBadge'
 import ResultView from './components/ResultView'
 import type { Mood, MoodEntry } from './types/mood'
-import { setMoodSound, setMuted, startAmbient, stopAmbient } from './utils/audio'
+import {
+  getAudioState,
+  setMoodSound,
+  setMuted,
+  startAmbient,
+  stopAmbient,
+  subscribeAudio,
+} from './utils/audio'
 import { saveEntry } from './utils/storage'
 
 type View = 'landing' | 'entry' | 'result' | 'history'
@@ -14,49 +21,47 @@ function App() {
   const [view, setView] = useState<View>('landing')
   const [currentEntry, setCurrentEntry] = useState<MoodEntry | null>(null)
   const [saved, setSaved] = useState(false)
-  const [musicEnabled, setMusicEnabled] = useState(true)
-  const [musicActive, setMusicActive] = useState(false)
+  const [audioState, setAudioState] = useState(() => getAudioState())
 
   useEffect(() => {
     let mounted = true
+    const unsubscribe = subscribeAudio((nextState) => {
+      if (mounted) {
+        setAudioState(nextState)
+      }
+    })
 
     startAmbient().then((started) => {
       if (mounted) {
-        setMusicActive(started)
+        setAudioState(started)
       }
     })
 
     return () => {
       mounted = false
+      unsubscribe()
       stopAmbient()
     }
   }, [])
 
   async function activateMusic(nextMood?: Mood) {
-    if (!musicEnabled) {
-      return
-    }
-
     const started = await startAmbient(nextMood ?? currentEntry?.mood)
-    setMusicActive(started)
+    setAudioState(started)
   }
 
   function handleMoodAudio(nextMood: Mood) {
-    setMoodSound(nextMood)
-    void activateMusic(nextMood)
+    void setMoodSound(nextMood).then(setAudioState)
   }
 
   async function handleMusicToggle() {
-    if (musicEnabled && musicActive) {
-      setMusicEnabled(false)
-      setMusicActive(false)
-      await setMuted(true)
+    if (audioState.isPlaying) {
+      const nextState = await setMuted(true)
+      setAudioState(nextState)
       return
     }
 
-    setMusicEnabled(true)
-    const started = await setMuted(false)
-    setMusicActive(started)
+    const nextState = await setMuted(false)
+    setAudioState(nextState)
   }
 
   function handleGenerated(entry: MoodEntry) {
@@ -77,11 +82,11 @@ function App() {
   return (
     <main className="app-shell" onPointerDown={() => void activateMusic()}>
       <div className="ambient-bg" aria-hidden="true" />
-      <MusicToggle isActive={musicEnabled && musicActive} onToggle={handleMusicToggle} />
+      <MusicPlayerBadge audioState={audioState} onToggle={handleMusicToggle} />
 
       {view === 'landing' && (
         <LandingView
-          isMusicActive={musicEnabled && musicActive}
+          audioState={audioState}
           onStart={() => {
             void activateMusic()
             setView('entry')
@@ -96,6 +101,7 @@ function App() {
       {view === 'entry' && (
         <EntryView
           onGenerated={handleGenerated}
+          audioState={audioState}
           onHome={() => setView('landing')}
           onMoodChange={handleMoodAudio}
         />
