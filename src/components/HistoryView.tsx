@@ -1,7 +1,10 @@
 import { Flame, Home, Music2, Plus, Trash2, Waves } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { useMemo, useState } from 'react'
+import { getMoodTheme } from '../data/moodThemes'
 import type { Mood, MoodEntry } from '../types/mood'
 import { clearEntries, deleteEntry, getEntries } from '../utils/storage'
+import ArchiveCard from './ArchiveCard'
 import StatCard from './StatCard'
 
 interface HistoryViewProps {
@@ -36,34 +39,56 @@ function topMood(entries: MoodEntry[]) {
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '暂无'
 }
 
-function formatShortDate(value: string) {
+function formatDetailDate(value: string) {
   return new Intl.DateTimeFormat('zh-CN', {
-    month: 'short',
     day: 'numeric',
+    month: 'long',
+    year: 'numeric',
   }).format(new Date(value))
 }
 
 function HistoryView({ onHome, onCreate }: HistoryViewProps) {
   const [entries, setEntries] = useState<MoodEntry[]>(() => getEntries())
+  const [selectedId, setSelectedId] = useState<string | null>(() => getEntries()[0]?.id ?? null)
 
-  const stats = useMemo(
-    () => ({
-      days: recordedDays(entries),
-      energy: average(entries, 'energy'),
-      stress: average(entries, 'stress'),
-      mood: topMood(entries),
-    }),
+  const sortedEntries = useMemo(
+    () =>
+      [...entries].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      ),
     [entries],
   )
 
+  const selectedEntry = useMemo(
+    () => sortedEntries.find((entry) => entry.id === selectedId) ?? sortedEntries[0] ?? null,
+    [selectedId, sortedEntries],
+  )
+
+  const stats = useMemo(
+    () => ({
+      days: recordedDays(sortedEntries),
+      energy: average(sortedEntries, 'energy'),
+      stress: average(sortedEntries, 'stress'),
+      mood: topMood(sortedEntries),
+    }),
+    [sortedEntries],
+  )
+
   function handleDelete(id: string) {
-    setEntries(deleteEntry(id))
+    const nextEntries = deleteEntry(id)
+    setEntries(nextEntries)
+    if (selectedId === id) {
+      setSelectedId(nextEntries[0]?.id ?? null)
+    }
   }
 
   function handleClear() {
     clearEntries()
     setEntries([])
+    setSelectedId(null)
   }
+
+  const selectedTheme = selectedEntry ? getMoodTheme(selectedEntry.mood) : null
 
   return (
     <section className="view history-view page-fade">
@@ -74,8 +99,8 @@ function HistoryView({ onHome, onCreate }: HistoryViewProps) {
         </button>
         <div>
           <p className="eyebrow">MoodTune Archive</p>
-          <h1>情绪回声</h1>
-          <p>这些记录像一组私人歌单，保存着你曾经经过的状态。</p>
+          <h1>我的情绪档案</h1>
+          <p>这里保存着你每天的心情、颜色与声音。</p>
         </div>
         <button className="primary-button compact-action" type="button" onClick={onCreate}>
           <Plus size={18} />
@@ -90,12 +115,13 @@ function HistoryView({ onHome, onCreate }: HistoryViewProps) {
         <StatCard icon={<Music2 size={20} />} label="最常出现的心情" value={stats.mood} />
       </div>
 
-      {entries.length === 0 ? (
+      {sortedEntries.length === 0 ? (
         <div className="empty-state glass-panel">
-          <h2>还没有记录。先为今天生成一张情绪音乐卡片吧。</h2>
+          <div className="empty-illustration" aria-hidden="true" />
+          <h2>这里还没有心情被收藏，去记录今天的第一段声音吧。</h2>
           <button className="primary-button" type="button" onClick={onCreate}>
             <Plus size={18} />
-            开始记录
+            去记录今天
           </button>
         </div>
       ) : (
@@ -107,34 +133,50 @@ function HistoryView({ onHome, onCreate }: HistoryViewProps) {
             </button>
           </div>
 
-          <div className="history-grid">
-            {entries.map((entry) => (
-              <article className="history-card" key={entry.id}>
-                <div
-                  className="history-card__stripe"
-                  style={{ background: entry.recommendation.gradient }}
+          <div className="archive-layout">
+            <div className="archive-grid">
+              {sortedEntries.map((entry) => (
+                <ArchiveCard
+                  key={entry.id}
+                  entry={entry}
+                  selected={selectedEntry?.id === entry.id}
+                  onDelete={handleDelete}
+                  onSelect={(nextEntry) => setSelectedId(nextEntry.id)}
                 />
-                <div className="history-card__top">
-                  <span>{formatShortDate(entry.createdAt)}</span>
-                  <strong>{entry.mood}</strong>
+              ))}
+            </div>
+
+            {selectedEntry && selectedTheme && (
+              <aside
+                className="archive-detail glass-panel"
+                style={
+                  {
+                    '--archive-accent': selectedTheme.archiveAccent,
+                    '--archive-paper': selectedTheme.archivePaper,
+                    '--archive-ink': selectedTheme.textColor,
+                } as CSSProperties
+              }
+              >
+                <div className="archive-detail__paper">
+                  <p className="eyebrow">翻开这一页</p>
+                  <h2>{formatDetailDate(selectedEntry.createdAt)}</h2>
+                  <div className="archive-detail__mood">
+                    <span style={{ background: selectedTheme.archiveAccent }} aria-hidden="true" />
+                    {selectedEntry.mood} · {selectedEntry.recommendation.musicMood}
+                  </div>
+                  <p className="archive-detail__quote">{selectedEntry.quote}</p>
+                  <p className="archive-detail__note">
+                    {selectedEntry.note || '这一天没有写下很多字，但它仍然留下了颜色和声音。'}
+                  </p>
+                  <div className="archive-detail__meta">
+                    <span>{selectedEntry.weather}</span>
+                    <span>能量 {selectedEntry.energy}/10</span>
+                    <span>压力 {selectedEntry.stress}/10</span>
+                    <span>{selectedEntry.recommendation.genres.join(' / ')}</span>
+                  </div>
                 </div>
-                <h2>{entry.recommendation.musicMood}</h2>
-                <p>{entry.note || '这一天没有写下日记，但留下了情绪声音。'}</p>
-                <div className="history-card__meta">
-                  <span>风格 {entry.recommendation.genres[0]}</span>
-                  <span>能量 {entry.energy}</span>
-                  <span>压力 {entry.stress}</span>
-                </div>
-                <button
-                  className="icon-text-button delete-button"
-                  type="button"
-                  onClick={() => handleDelete(entry.id)}
-                >
-                  <Trash2 size={16} />
-                  删除
-                </button>
-              </article>
-            ))}
+              </aside>
+            )}
           </div>
         </>
       )}

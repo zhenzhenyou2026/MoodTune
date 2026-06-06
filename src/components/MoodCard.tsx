@@ -1,6 +1,8 @@
-import { Disc3, Music2, Sparkles } from 'lucide-react'
+import { Music2, Sparkles } from 'lucide-react'
 import type { CSSProperties } from 'react'
+import { getMoodTheme } from '../data/moodThemes'
 import type { MoodEntry } from '../types/mood'
+import PreviewDecoration from './PreviewDecoration'
 
 interface MoodCardProps {
   entry: MoodEntry
@@ -16,19 +18,23 @@ function formatDate(value: string) {
 }
 
 function MoodCard({ entry, compact = false }: MoodCardProps) {
+  const theme = getMoodTheme(entry.mood)
   const style = {
     '--card-gradient': entry.recommendation.gradient,
+    '--card-ink': theme.textColor,
+    '--card-decoration': theme.decorationTone,
   } as CSSProperties
 
   return (
     <article className={`mood-card ${compact ? 'is-compact' : ''}`} style={style}>
       <div className="mood-card__texture" aria-hidden="true" />
+      <PreviewDecoration tone={theme.decorationTone} />
       <div className="mood-card__top">
         <span className="brand-mark">
           <Music2 size={16} />
           MoodTune
         </span>
-        <span>{formatDate(entry.createdAt)}</span>
+        <span className="mood-card__date">{formatDate(entry.createdAt)}</span>
       </div>
 
       <div className="mood-card__body">
@@ -37,7 +43,7 @@ function MoodCard({ entry, compact = false }: MoodCardProps) {
           <h2>{entry.mood}</h2>
         </div>
         <div className="disc-mark" aria-hidden="true">
-          <Disc3 size={compact ? 54 : 76} />
+          <span />
         </div>
       </div>
 
@@ -67,7 +73,7 @@ function MoodCard({ entry, compact = false }: MoodCardProps) {
       {!compact && (
         <div className="reason-block">
           <p>{entry.recommendation.reason}</p>
-          <small>{entry.recommendation.visualLabel}</small>
+          <small>{entry.quote || entry.recommendation.visualLabel}</small>
         </div>
       )}
     </article>

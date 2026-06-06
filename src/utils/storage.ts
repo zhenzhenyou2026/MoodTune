@@ -1,4 +1,5 @@
 import type { MoodEntry, MoodInput } from '../types/mood'
+import { getMoodQuote, getMoodTheme } from '../data/moodThemes'
 import { moods, weathers } from '../types/mood'
 import { generateRecommendation } from './recommendation'
 
@@ -33,11 +34,17 @@ function normalizeEntry(value: unknown): MoodEntry | null {
     weather: raw.weather as MoodEntry['weather'],
     note: typeof raw.note === 'string' ? raw.note : '',
   }
+  const theme = getMoodTheme(input.mood)
 
   return {
     ...input,
     id: raw.id,
     createdAt: raw.createdAt,
+    musicKey: typeof raw.musicKey === 'string' ? raw.musicKey : theme.musicKey,
+    quote:
+      typeof raw.quote === 'string' && raw.quote.trim()
+        ? raw.quote
+        : getMoodQuote(input.mood, raw.createdAt),
     recommendation:
       raw.recommendation && typeof raw.recommendation === 'object'
         ? (raw.recommendation as MoodEntry['recommendation'])

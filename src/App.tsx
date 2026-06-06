@@ -20,7 +20,7 @@ function App() {
   useEffect(() => {
     let mounted = true
 
-    startAmbient('平静').then((started) => {
+    startAmbient().then((started) => {
       if (mounted) {
         setMusicActive(started)
       }
@@ -32,12 +32,12 @@ function App() {
     }
   }, [])
 
-  async function activateMusic(nextMood: Mood = currentEntry?.mood || '平静') {
+  async function activateMusic(nextMood?: Mood) {
     if (!musicEnabled) {
       return
     }
 
-    const started = await startAmbient(nextMood)
+    const started = await startAmbient(nextMood ?? currentEntry?.mood)
     setMusicActive(started)
   }
 

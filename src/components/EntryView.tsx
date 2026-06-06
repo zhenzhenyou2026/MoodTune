@@ -1,16 +1,11 @@
-import {
-  Home,
-  Moon,
-  Smile,
-  Sparkles,
-  Waves,
-  Zap,
-} from 'lucide-react'
+import { Home, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { getMoodQuote, getMoodTheme } from '../data/moodThemes'
 import type { Mood, MoodEntry, MoodInput, Weather } from '../types/mood'
 import { moods, weathers } from '../types/mood'
 import { generateRecommendation } from '../utils/recommendation'
 import MoodCard from './MoodCard'
+import MoodFaceIcon from './MoodFaceIcon'
 import PillButton from './PillButton'
 import RangeControl from './RangeControl'
 import WeatherIcon from './WeatherIcon'
@@ -20,24 +15,6 @@ interface EntryViewProps {
   onHome: () => void
   onMoodChange: (mood: Mood) => void
 }
-
-const moodIcons = {
-  开心: <Smile size={18} />,
-  平静: <Waves size={18} />,
-  焦虑: <Waves size={18} />,
-  疲惫: <Moon size={18} />,
-  低落: <Moon size={18} />,
-  兴奋: <Zap size={18} />,
-} satisfies Record<Mood, JSX.Element>
-
-const moodTones = {
-  开心: 'happy',
-  平静: 'calm',
-  焦虑: 'anxious',
-  疲惫: 'tired',
-  低落: 'sad',
-  兴奋: 'excited',
-} satisfies Record<Mood, string>
 
 const weatherTones = {
   晴天: 'sunny',
@@ -75,6 +52,8 @@ function EntryView({ onGenerated, onHome, onMoodChange }: EntryViewProps) {
       ...safeInput,
       id: 'preview',
       createdAt: new Date().toISOString(),
+      musicKey: getMoodTheme(safeInput.mood).musicKey,
+      quote: getMoodQuote(safeInput.mood, safeInput.note || safeInput.weather),
       recommendation: generateRecommendation(safeInput),
     }
   }, [energy, mood, note, stress, weather])
@@ -95,10 +74,15 @@ function EntryView({ onGenerated, onHome, onMoodChange }: EntryViewProps) {
       note: note.trim(),
     }
 
+    const createdAt = new Date().toISOString()
+    const theme = getMoodTheme(input.mood)
+
     onGenerated({
       ...input,
       id: createId(),
-      createdAt: new Date().toISOString(),
+      createdAt,
+      musicKey: theme.musicKey,
+      quote: getMoodQuote(input.mood, createdAt),
       recommendation: generateRecommendation(input),
     })
   }
@@ -126,9 +110,9 @@ function EntryView({ onGenerated, onHome, onMoodChange }: EntryViewProps) {
                 <PillButton
                   key={item}
                   active={mood === item}
-                  icon={moodIcons[item]}
+                  icon={<MoodFaceIcon iconKey={getMoodTheme(item).iconKey} />}
                   label={item}
-                  tone={moodTones[item]}
+                  tone={getMoodTheme(item).buttonTone}
                   onClick={() => {
                     setMood(item)
                     onMoodChange(item)
